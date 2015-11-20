@@ -9,7 +9,7 @@ package eventlog_test
 import (
 	"testing"
 
-	"golang.org/x/sys/windows/svc/eventlog"
+	"github.com/andrewkroh/sys/windows/svc/eventlog"
 )
 
 func TestLog(t *testing.T) {
@@ -18,13 +18,15 @@ func TestLog(t *testing.T) {
 	}
 
 	const name = "mylog"
-	const supports = eventlog.Error | eventlog.Warning | eventlog.Info
-	err := eventlog.InstallAsEventCreate(name, supports)
+	const supports = eventlog.Error | eventlog.Warning | eventlog.Info |
+		eventlog.Success | eventlog.AuditSuccess | eventlog.AuditFailure
+	alreadyExists, err := eventlog.InstallAsEventCreate(eventlog.Application, name, supports)
 	if err != nil {
 		t.Fatalf("Install failed: %s", err)
 	}
+	t.Log("Already exists:", alreadyExists)
 	defer func() {
-		err = eventlog.Remove(name)
+		err = eventlog.RemoveSource(eventlog.Application, name)
 		if err != nil {
 			t.Fatalf("Remove failed: %s", err)
 		}
@@ -36,16 +38,28 @@ func TestLog(t *testing.T) {
 	}
 	defer l.Close()
 
-	err = l.Info(1, "info")
+	err = l.Success(1, "success")
+	if err != nil {
+		t.Fatalf("Successo failed: %s", err)
+	}
+	err = l.Info(2, "info")
 	if err != nil {
 		t.Fatalf("Info failed: %s", err)
 	}
-	err = l.Warning(2, "warning")
+	err = l.Warning(3, "warning")
 	if err != nil {
 		t.Fatalf("Warning failed: %s", err)
 	}
-	err = l.Error(3, "error")
+	err = l.Error(4, "error")
 	if err != nil {
 		t.Fatalf("Error failed: %s", err)
+	}
+	err = l.AuditSuccess(5, "audit success")
+	if err != nil {
+		t.Fatalf("AuditSuccess failed: %s", err)
+	}
+	err = l.AuditFailure(6, "audit failure")
+	if err != nil {
+		t.Fatalf("AuditFailure failed: %s", err)
 	}
 }
