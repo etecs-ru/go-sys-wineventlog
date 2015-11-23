@@ -50,43 +50,46 @@ func (l *Log) Close() error {
 // end of event log l.
 // etype should be one of Info, Success, Warning, Error, AuditSuccess, or AuditFailure.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
-func (l *Log) Report(etype uint16, eid uint32, msg string) error {
-	ss := []*uint16{syscall.StringToUTF16Ptr(msg)}
-	return windows.ReportEvent(l.Handle, etype, 0, eid, 0, 1, 0, &ss[0], nil)
+func (l *Log) Report(etype uint16, eid uint32, msgs []string) error {
+	var msgPtrs []*uint16
+	for _, msg := range msgs {
+		msgPtrs = append(msgPtrs, syscall.StringToUTF16Ptr(msg))
+	}
+	return windows.ReportEvent(l.Handle, etype, 0, eid, 0, uint16(len(msgPtrs)), 0, &msgPtrs[0], nil)
 }
 
 // Success writes a success event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) Success(eid uint32, msg string) error {
-	return l.Report(Success, eid, msg)
+	return l.Report(Success, eid, []string{msg})
 }
 
 // Info writes an information event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) Info(eid uint32, msg string) error {
-	return l.Report(Info, eid, msg)
+	return l.Report(Info, eid, []string{msg})
 }
 
 // Warning writes an warning event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) Warning(eid uint32, msg string) error {
-	return l.Report(Warning, eid, msg)
+	return l.Report(Warning, eid, []string{msg})
 }
 
 // Error writes an error event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) Error(eid uint32, msg string) error {
-	return l.Report(Error, eid, msg)
+	return l.Report(Error, eid, []string{msg})
 }
 
 // AuditSuccess writes an audit event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) AuditSuccess(eid uint32, msg string) error {
-	return l.Report(AuditSuccess, eid, msg)
+	return l.Report(AuditSuccess, eid, []string{msg})
 }
 
 // AuditFailure writes an audit event msg with event id eid to the end of event log l.
 // When EventCreate.exe is used, eid must be between 1 and 1000.
 func (l *Log) AuditFailure(eid uint32, msg string) error {
-	return l.Report(AuditFailure, eid, msg)
+	return l.Report(AuditFailure, eid, []string{msg})
 }
