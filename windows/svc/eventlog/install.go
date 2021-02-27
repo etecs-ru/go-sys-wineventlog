@@ -8,6 +8,7 @@ package eventlog
 
 import (
 	"fmt"
+
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
@@ -97,7 +98,7 @@ func RemoveSource(provider, src string) error {
 func RemoveProvider(provider string) error {
 	// Protect against removing Application.
 	if provider == Application {
-		return fmt.Errorf("%s cannot be removed. Only custom providers can be removed.")
+		return fmt.Errorf("%s cannot be removed. Only custom providers can be removed", provider)
 	}
 
 	eventLogKey, err := registry.OpenKey(registry.LOCAL_MACHINE, eventLogKeyName, registry.SET_VALUE)
